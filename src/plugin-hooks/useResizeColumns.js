@@ -33,7 +33,7 @@ export const useResizeColumns = hooks => {
 }
 
 const defaultGetResizerProps = (props, { instance, header }) => {
-  const { dispatch } = instance
+  const { dispatch, tableRef } = instance
 
   const onResizeStart = (e, header) => {
     let isTouchEvent = false
@@ -54,17 +54,19 @@ const defaultGetResizerProps = (props, { instance, header }) => {
     }
     const dispatchEnd = () => dispatch({ type: actions.columnDoneResizing })
 
+    const eventElement = tableRef && tableRef.current || document
+
     const handlersAndEvents = {
       mouse: {
         moveEvent: 'mousemove',
         moveHandler: e => dispatchMove(e.clientX),
         upEvent: 'mouseup',
         upHandler: e => {
-          document.removeEventListener(
+          eventElement.removeEventListener(
             'mousemove',
             handlersAndEvents.mouse.moveHandler
           )
-          document.removeEventListener(
+          eventElement.removeEventListener(
             'mouseup',
             handlersAndEvents.mouse.upHandler
           )
@@ -83,11 +85,11 @@ const defaultGetResizerProps = (props, { instance, header }) => {
         },
         upEvent: 'touchend',
         upHandler: e => {
-          document.removeEventListener(
+          eventElement.removeEventListener(
             handlersAndEvents.touch.moveEvent,
             handlersAndEvents.touch.moveHandler
           )
-          document.removeEventListener(
+          eventElement.removeEventListener(
             handlersAndEvents.touch.upEvent,
             handlersAndEvents.touch.moveHandler
           )
@@ -102,12 +104,12 @@ const defaultGetResizerProps = (props, { instance, header }) => {
     const passiveIfSupported = passiveEventSupported()
       ? { passive: false }
       : false
-    document.addEventListener(
+    eventElement.addEventListener(
       events.moveEvent,
       events.moveHandler,
       passiveIfSupported
     )
-    document.addEventListener(
+    eventElement.addEventListener(
       events.upEvent,
       events.upHandler,
       passiveIfSupported
