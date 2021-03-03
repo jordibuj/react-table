@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import styled from 'styled-components'
 import { useTable, useBlockLayout, useResizeColumns } from 'react-table'
+import NewWindow from 'react-new-window'
 
 import makeData from './makeData'
 
@@ -56,7 +57,9 @@ const Styles = styled.div`
   }
 `
 
-function Table({ columns, data }) {
+function Table({ columns, data, detached, setDetached }) {
+  const tableRef = useRef();
+
   const defaultColumn = React.useMemo(
     () => ({
       minWidth: 30,
@@ -79,15 +82,17 @@ function Table({ columns, data }) {
       columns,
       data,
       defaultColumn,
+      tableRef,
     },
     useBlockLayout,
     useResizeColumns
   )
 
-  return (
+  const Component = (
     <>
       <button onClick={resetResizing}>Reset Resizing</button>
-      <div>
+      {detached ? null : (<button onClick={() => setDetached(true)}>Detach</button>)}
+      <div ref={tableRef}>
         <div {...getTableProps()} className="table">
           <div>
             {headerGroups.map(headerGroup => (
@@ -131,6 +136,20 @@ function Table({ columns, data }) {
       </pre>
     </>
   )
+
+  return detached ? (
+    <NewWindow
+      title='Detached table'
+      name='Detached table'
+      onUnload={() => setDetached(false)}
+      features={{ width: 800, height: 800 }}
+      center="parent"
+    >
+      <Styles>
+        {Component}
+      </Styles>
+    </NewWindow>
+  ) : Component
 }
 
 function App() {
@@ -177,10 +196,11 @@ function App() {
   )
 
   const data = React.useMemo(() => makeData(10), [])
+  const [ detached, setDetached ] = useState(false)
 
   return (
     <Styles>
-      <Table columns={columns} data={data} />
+      <Table columns={columns} data={data} detached={detached} setDetached={setDetached}/>
     </Styles>
   )
 }
