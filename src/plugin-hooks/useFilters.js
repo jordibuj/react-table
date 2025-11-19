@@ -102,6 +102,7 @@ function reducer(state, action, previousState, instance) {
       // Filter out undefined values
       filters: functionalUpdate(filters, state.filters).filter(filter => {
         const column = allColumns.find(d => d.id === filter.id)
+        if (!column) return false
         const filterMethod = getFilterMethod(
           column.filter,
           userFilterTypes || {},
